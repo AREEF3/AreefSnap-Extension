@@ -48,12 +48,12 @@ function activate(context) {
         const selection = editor.selection;
         const code = editor.document.getText(selection.isEmpty ? undefined : selection);
         const language = editor.document.languageId;
-        const panel = vscode.window.createWebviewPanel('areefsnap', 'AreefSnap', vscode.ViewColumn.Beside, {
+        const panel = vscode.window.createWebviewPanel('areefsnap', 'AreefSnap', vscode.ViewColumn.One, {
             enableScripts: true,
             localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'media'))]
         });
-        const mediaPath = (file) => panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'media', file)));
-        panel.webview.html = getWebviewContent(code, language, mediaPath);
+        const mp = (file) => panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, 'media', file)));
+        panel.webview.html = getWebviewContent(code, language, mp, panel.webview.cspSource);
         panel.webview.onDidReceiveMessage(async (msg) => {
             if (msg.command === 'save') {
                 const uri = await vscode.window.showSaveDialog({
@@ -61,7 +61,7 @@ function activate(context) {
                     filters: { Images: ['png'] }
                 });
                 if (uri) {
-                    const base64 = msg.data.replace(/^data:image\/png;base64,/, '');
+                    const base64 = msg.data;
                     fs.writeFileSync(uri.fsPath, Buffer.from(base64, 'base64'));
                     vscode.window.showInformationMessage(`AreefSnap: Saved to ${uri.fsPath}`);
                 }
@@ -70,49 +70,59 @@ function activate(context) {
     });
     context.subscriptions.push(command);
 }
-function getWebviewContent(code, language, mediaPath) {
+function getWebviewContent(code, language, mp, cspSource) {
     const escaped = code
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
+    const lineCount = code.split('\n').length;
+    const lineNums = Array.from({ length: lineCount }, (_, i) => `<div class="ln">${i + 1}</div>`).join('');
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob: ${cspSource}; script-src ${cspSource} 'nonce-areefsnap' 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline' ${cspSource};"/>
   <title>AreefSnap</title>
-  <link rel="stylesheet" href="${mediaPath('style.css')}"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="${mp('style.css')}"/>
+  <link id="hlStyle" rel="stylesheet" href="${mp('atom-one-dark.min.css')}"/>
+  <script nonce="areefsnap" src="${mp('highlight.min.js')}"></script>
+  <script nonce="areefsnap" src="${mp('dom-to-image-more.min.js')}"></script>
 </head>
 <body>
   <div class="toolbar">
     <label>Theme:
       <select id="themeSelect">
-        <option value="atom-one-dark">Dark</option>
-        <option value="github">Light</option>
-        <option value="monokai">Monokai</option>
+        <option>Love</option>
+        <option>Friends</option>
+        <option>Ocean</option>
+        <option>Forest</option>
+        <option>Candy</option>
+        <option>Night Owl</option>
+        <option>Midnight</option>
+        <option>Simple</option>
       </select>
     </label>
-    <label>Background:
-      <input type="color" id="bgColor" value="#282c34"/>
-    </label>
-    <button id="saveBtn">📸 Save PNG</button>
+    <label>Outer BG: <input type="color" id="outerBg" value="#ff6b6b"/></label>
+    <label>Inner BG: <input type="color" id="innerBg" value="#1a0000"/></label>
+    <button id="saveBtn">&#128248; Save PNG</button>
   </div>
-
   <div class="canvas-wrapper">
-    <div class="snap-card" id="snapCard">
-      <div class="window-chrome">
-        <span class="dot red"></span>
-        <span class="dot yellow"></span>
-        <span class="dot green"></span>
+    <div class="snap-outer" id="snapOuter">
+      <div class="theme-deco" id="themeDeco"></div>
+      <div class="snap-card" id="snapCard">
+        <div class="window-chrome">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="code-wrap">
+          <div class="line-nums">${lineNums}</div>
+          <pre><code id="codeBlock" class="language-${language}">${escaped}</code></pre>
+        </div>
       </div>
-      <pre><code class="language-${language}" id="codeBlock">${escaped}</code></pre>
     </div>
   </div>
-
-  <script src="${mediaPath('snap.js')}"></script>
+  <script nonce="areefsnap" src="${mp('snap.js')}"></script>
 </body>
 </html>`;
 }

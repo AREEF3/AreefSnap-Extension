@@ -1,27 +1,29 @@
 {
-  "name": "areefsnap",
-  "displayName": "AreefSnap",
+  "name": "a-snap",
+  "displayName": "A-Snap",
   "description": "Beautiful code screenshots from VS Code",
-  "version": "0.0.1",
+  "version": "1.3.0",
   "publisher": "Areef",
   "icon": "Areef.png",
   "engines": {
     "vscode": "^1.80.0"
   },
-  "categories": ["Other"],
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "areefsnap.snap",
-        "title": "AreefSnap: Take Snap"
+        "command": "a-snap.snap",
+        "title": "A-Snap: Take Snap"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "areefsnap.snap",
+          "command": "a-snap.snap",
           "when": "editorHasSelection",
           "group": "navigation"
         }
@@ -34,13 +36,18 @@
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/vscode": "^1.80.0",
     "@types/node": "^18.0.0",
+    "@types/vscode": "^1.80.0",
+    "browserify": "^17.0.1",
     "typescript": "^5.0.0"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/AREEF3/AreefSnap-Extension.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "highlight.js": "^11.11.1",
+    "html2canvas": "^1.4.1"
+  }
 }

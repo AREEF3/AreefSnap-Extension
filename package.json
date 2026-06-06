@@ -1,0 +1,46 @@
+{
+  "name": "areefsnap",
+  "displayName": "AreefSnap",
+  "description": "Beautiful code screenshots from VS Code",
+  "version": "0.0.1",
+  "publisher": "Areef",
+  "icon": "Areef.png",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "areefsnap.snap",
+        "title": "AreefSnap: Take Snap"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "areefsnap.snap",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/areefdev/areefsnap"
+  },
+  "license": "MIT"
+}
